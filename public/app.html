@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אסנת הרציגר - ניהול עסק</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h2>💼 אסנת הרציגר - ניהול עסק</h2>
+    <div class="header-left">
+      <span id="welcomeMsg"></span>
+      <button id="logoutBtn">התנתק</button>
+    </div>
+  </header>
+
+  <nav class="app-nav">
+    <button class="nav-btn active" data-section="dashboard">📊 דשבורד</button>
+    <button class="nav-btn" data-section="add">➕ הוספה</button>
+    <button class="nav-btn" data-section="transactions">📋 תנועות</button>
+    <button class="nav-btn" data-section="receipts">🧾 קבלות</button>
+    <button class="nav-btn" data-section="clients">👥 לקוחות</button>
+  </nav>
+
+  <main class="app-content">
+
+    <!-- Dashboard -->
+    <div class="section active" id="sec-dashboard">
+      <div class="filter-bar">
+        <select id="dashMonth">
+          <option value="">כל החודשים</option>
+          <option value="01">ינואר</option><option value="02">פברואר</option>
+          <option value="03">מרץ</option><option value="04">אפריל</option>
+          <option value="05">מאי</option><option value="06">יוני</option>
+          <option value="07">יולי</option><option value="08">אוגוסט</option>
+          <option value="09">ספטמבר</option><option value="10">אוקטובר</option>
+          <option value="11">נובמבר</option><option value="12">דצמבר</option>
+        </select>
+        <select id="dashYear"></select>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card income">
+          <div class="label">הכנסות</div>
+          <div class="amount" id="totalIncome">₪0</div>
+        </div>
+        <div class="summary-card expense">
+          <div class="label">הוצאות</div>
+          <div class="amount" id="totalExpense">₪0</div>
+        </div>
+        <div class="summary-card profit">
+          <div class="label">רווח</div>
+          <div class="amount" id="totalProfit">₪0</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>פירוט לפי אמצעי תשלום</h3>
+        <div id="methodBreakdown"></div>
+      </div>
+    </div>
+
+    <!-- Add Transaction -->
+    <div class="section" id="sec-add">
+      <div class="card">
+        <h3>הוספת תנועה חדשה</h3>
+        <form id="addForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>סוג</label>
+              <select id="addType" required>
+                <option value="income">הכנסה</option>
+                <option value="expense">הוצאה</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>סכום (₪)</label>
+              <input type="number" id="addAmount" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>אמצעי תשלום</label>
+              <select id="addMethod" required>
+                <option value="bit">ביט</option>
+                <option value="paybox">פייבוקס</option>
+                <option value="credit">כרטיס אשראי</option>
+                <option value="transfer">העברה בנקאית</option>
+                <option value="cash">מזומן</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>תאריך</label>
+              <input type="date" id="addDate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>שם לקוח</label>
+            <input type="text" id="addClient" list="clientList">
+            <datalist id="clientList"></datalist>
+          </div>
+          <div class="form-group">
+            <label>תיאור</label>
+            <input type="text" id="addDesc" placeholder="טיפול / ייעוץ / וכו׳">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">שמור</button>
+        </form>
+        <p id="addMsg" style="text-align:center;margin-top:12px;color:#27ae60"></p>
+      </div>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="section" id="sec-transactions">
+      <div class="card">
+        <h3>רשימת תנועות</h3>
+        <div class="filter-bar">
+          <select id="filterType">
+            <option value="">הכל</option>
+            <option value="income">הכנסות</option>
+            <option value="expense">הוצאות</option>
+          </select>
+          <select id="filterMonth">
+            <option value="">כל החודשים</option>
+            <option value="01">ינואר</option><option value="02">פברואר</option>
+            <option value="03">מרץ</option><option value="04">אפריל</option>
+            <option value="05">מאי</option><option value="06">יוני</option>
+            <option value="07">יולי</option><option value="08">אוגוסט</option>
+            <option value="09">ספטמבר</option><option value="10">אוקטובר</option>
+            <option value="11">נובמבר</option><option value="12">דצמבר</option>
+          </select>
+          <select id="filterYear"></select>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>תאריך</th>
+                <th>סוג</th>
+                <th>סכום</th>
+                <th>אמצעי</th>
+                <th>לקוח</th>
+                <th>תיאור</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="transBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receipts -->
+    <div class="section" id="sec-receipts">
+      <div class="card">
+        <h3>הפקת קבלה חדשה</h3>
+        <form id="receiptForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>שם לקוח</label>
+              <input type="text" id="rcptClient" list="clientList2" required>
+              <datalist id="clientList2"></datalist>
+            </div>
+            <div class="form-group">
+              <label>סכום (₪)</label>
+              <input type="number" id="rcptAmount" step="0.01" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>אמצעי תשלום</label>
+              <select id="rcptMethod">
+                <option value="bit">ביט</option>
+                <option value="paybox">פייבוקס</option>
+                <option value="transfer">העברה בנקאית</option>
+                <option value="cash">מזומן</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>תאריך</label>
+              <input type="date" id="rcptDate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>תיאור שירות</label>
+            <input type="text" id="rcptDesc" value="טיפול">
+          </div>
+          <button type="submit" class="btn btn-success" style="width:100%">🧾 הפק קבלה</button>
+        </form>
+        <p id="rcptMsg" style="text-align:center;margin-top:12px;color:#27ae60"></p>
+      </div>
+      <div class="card">
+        <h3>קבלות שהופקו</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>#</th><th>תאריך</th><th>לקוח</th><th>סכום</th><th>פעולות</th></tr>
+            </thead>
+            <tbody id="receiptsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clients -->
+    <div class="section" id="sec-clients">
+      <div class="card">
+        <h3>הוספת לקוח</h3>
+        <form id="clientForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>שם</label>
+              <input type="text" id="clientName" required>
+            </div>
+            <div class="form-group">
+              <label>טלפון</label>
+              <input type="text" id="clientPhone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>אימייל</label>
+            <input type="email" id="clientEmail">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%">הוסף לקוח</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3>רשימת לקוחות</h3>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>פעולות</th></tr></thead>
+            <tbody id="clientsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>

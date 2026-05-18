@@ -1,0 +1,17 @@
+{
+  "name": "osnat-business",
+  "version": "1.0.0",
+  "description": "Income & expense tracker with receipt generation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "nedb-promises": "^6.2.3",
+    "pdfkit": "^0.15.0"
+  }
+}

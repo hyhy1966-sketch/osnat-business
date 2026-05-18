@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אסנת הרציגר - ניהול עסק</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h1>💼 ניהול עסק</h1>
+    <h3>אסנת הרציגר - פסיכותרפיה זוגית ומשפחתית</h3>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="login">התחברות</button>
+      <button class="tab-btn" data-tab="register">הרשמה</button>
+    </div>
+    <form id="authForm">
+      <div class="form-group">
+        <label for="username">שם משתמש</label>
+        <input type="text" id="username" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">סיסמה</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="submit-btn" id="submitBtn">התחבר</button>
+    </form>
+    <p class="error-msg" id="errorMsg"></p>
+  </div>
+  <script src="js/auth.js"></script>
+</body>
+</html>
