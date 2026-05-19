@@ -98,9 +98,19 @@
             <input type="text" id="addClient" list="clientList">
             <datalist id="clientList"></datalist>
           </div>
-          <div class="form-group">
-            <label>תיאור</label>
-            <input type="text" id="addDesc" placeholder="טיפול / ייעוץ / וכו׳">
+          <div class="form-row">
+            <div class="form-group">
+              <label>תיאור שירות</label>
+              <select id="addDesc">
+                <option value="ייעוץ אישי">ייעוץ אישי</option>
+                <option value="ייעוץ זוגי">ייעוץ זוגי</option>
+                <option value="ייעוץ משפחתי">ייעוץ משפחתי</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>תאריך שירות</label>
+              <input type="date" id="addServiceDate">
+            </div>
           </div>
           <button type="submit" class="btn btn-primary" style="width:100%">שמור</button>
         </form>
@@ -179,9 +189,19 @@
               <input type="date" id="rcptDate">
             </div>
           </div>
-          <div class="form-group">
-            <label>תיאור שירות</label>
-            <input type="text" id="rcptDesc" value="טיפול">
+          <div class="form-row">
+            <div class="form-group">
+              <label>תיאור שירות</label>
+              <select id="rcptDesc">
+                <option value="ייעוץ אישי">ייעוץ אישי</option>
+                <option value="ייעוץ זוגי">ייעוץ זוגי</option>
+                <option value="ייעוץ משפחתי">ייעוץ משפחתי</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>תאריך שירות</label>
+              <input type="date" id="rcptServiceDate">
+            </div>
           </div>
           <button type="submit" class="btn btn-success" style="width:100%">🧾 הפק קבלה</button>
         </form>

@@ -1,2 +1,4 @@
 {"userId":"JrsfsOwTCQ2TWdq4","number":1,"clientName":"ljgljg","description":"טיפול","amount":56,"method":"bit","date":"2026-05-18","createdAt":"2026-05-18T13:08:20.539Z","_id":"EDSekRrNHFwJuPC0"}
 {"userId":"JrsfsOwTCQ2TWdq4","number":2,"clientName":"דגכרעיי","description":"טיפול","amount":4533,"method":"bit","date":"2026-05-18","createdAt":"2026-05-18T13:11:52.246Z","_id":"tfPmKj0sjkiqN5Xh"}
+{"userId":"JrsfsOwTCQ2TWdq4","number":3,"clientName":"חגי זהר","description":"ייעוץ אישי","serviceDate":"2026-05-02","amount":350,"method":"bit","date":"2026-05-18","createdAt":"2026-05-18T14:36:58.951Z","_id":"f4Ng1PEDXKA64J4C"}
+{"userId":"JrsfsOwTCQ2TWdq4","number":4,"clientName":"חגי זהר","description":"ייעוץ משפחתי","serviceDate":"2026-05-01","amount":300,"method":"paybox","date":"2026-05-18","createdAt":"2026-05-18T14:43:55.534Z","_id":"xmLkUtuvOcrecz62"}

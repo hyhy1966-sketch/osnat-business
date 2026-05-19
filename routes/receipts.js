@@ -18,7 +18,7 @@ const BUSINESS = {
 // Create receipt
 router.post('/', auth, async (req, res) => {
   try {
-    const { clientName, description, amount, date, method } = req.body;
+    const { clientName, description, amount, date, method, serviceDate } = req.body;
 
     if (!clientName || !amount) {
       return res.status(400).json({ message: 'שם לקוח וסכום הם שדות חובה' });
@@ -31,7 +31,8 @@ router.post('/', auth, async (req, res) => {
       userId: req.user.id,
       number: nextNumber,
       clientName,
-      description: description || 'טיפול',
+      description: description || 'ייעוץ',
+      serviceDate: serviceDate || date || new Date().toISOString().split('T')[0],
       amount: Number(amount),
       method: method || '',
       date: date || new Date().toISOString().split('T')[0],
@@ -69,6 +70,7 @@ router.get('/:id/pdf', (req, res, next) => {
 
     const fontPath = path.join(__dirname, '..', 'public', 'fonts', 'NotoSansHebrew-Regular.ttf');
     const fontBoldPath = path.join(__dirname, '..', 'public', 'fonts', 'NotoSansHebrew-Bold.ttf');
+    const logoPath = path.join(__dirname, '..', 'public', 'fonts', 'logo.jpg');
 
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
@@ -87,60 +89,84 @@ router.get('/:id/pdf', (req, res, next) => {
     doc.rect(33, 33, 529, 774).stroke('#e0e0e0');
 
     // Header background
-    doc.rect(33, 33, 529, 120).fill('#2c3e50');
+    doc.rect(33, 33, 529, 130).fill('#2c3e50');
 
-    // Business name
-    doc.font('HebrewBold').fontSize(26).fillColor('#ffffff');
-    doc.text(BUSINESS.name, 50, 55, { align: 'right', width: 495, features: ['rtla'] });
+    // All header lines aligned to right edge (x=545) with equal 18px spacing
+    const hx = 545;
+    const hy = 46;
+    const hLineGap = 18;
 
-    doc.font('Hebrew').fontSize(14).fillColor('#ecf0f1');
-    doc.text(BUSINESS.subtitle, 50, 88, { align: 'right', width: 495, features: ['rtla'] });
+    // Line 1: Business name
+    doc.font('HebrewBold').fontSize(22).fillColor('#ffffff');
+    const nameW = doc.widthOfString(BUSINESS.name, { features: ['rtla'] });
+    doc.text(BUSINESS.name, hx - nameW, hy, { features: ['rtla'] });
 
-    doc.font('Hebrew').fontSize(11).fillColor('#bdc3c7');
-    doc.text('עוסק פטור', 50, 108, { width: 495, align: 'right', features: ['rtla'] });
-    doc.text(BUSINESS.taxId, 50, 108, { width: 435, align: 'right' });
+    // Line 2: Subtitle
+    doc.font('Hebrew').fontSize(13).fillColor('#ffffff');
+    const subW = doc.widthOfString(BUSINESS.subtitle, { features: ['rtla'] });
+    doc.text(BUSINESS.subtitle, hx - subW, hy + hLineGap * 1.6, { features: ['rtla'] });
 
-    doc.font('Hebrew').fontSize(10).fillColor('#95a5a6');
-    doc.text('נייד:', 50, 121, { width: 495, align: 'right', features: ['rtla'] });
-    doc.text(BUSINESS.phone, 50, 121, { width: 472, align: 'right' });
+    // Line 3: Osek patur + number
+    doc.font('Hebrew').fontSize(11).fillColor('#e0e0e0');
+    const osekW = doc.widthOfString('עוסק פטור', { features: ['rtla'] });
+    const taxW = doc.widthOfString(BUSINESS.taxId);
+    doc.text('עוסק פטור', hx - osekW, hy + hLineGap * 3, { features: ['rtla'] });
+    doc.text(BUSINESS.taxId, hx - osekW - taxW - 6, hy + hLineGap * 3);
 
-    doc.text('מייל:', 50, 134, { width: 495, align: 'right', features: ['rtla'] });
-    doc.text(BUSINESS.email, 50, 134, { width: 470, align: 'right' });
+    // Line 4: Phone
+    doc.font('Hebrew').fontSize(10).fillColor('#e0e0e0');
+    const naidW = doc.widthOfString('נייד:', { features: ['rtla'] });
+    const phoneW = doc.widthOfString(BUSINESS.phone);
+    doc.text('נייד:', hx - naidW, hy + hLineGap * 4, { features: ['rtla'] });
+    doc.text(BUSINESS.phone, hx - naidW - phoneW - 6, hy + hLineGap * 4);
+
+    // Line 5: Email
+    const mailW = doc.widthOfString('מייל:', { features: ['rtla'] });
+    const emailW = doc.widthOfString(BUSINESS.email);
+    doc.text('מייל:', hx - mailW, hy + hLineGap * 5, { features: ['rtla'] });
+    doc.text(BUSINESS.email, hx - mailW - emailW - 6, hy + hLineGap * 5);
+
+    // Logo on left side of header
+    try { doc.image(logoPath, 45, 42, { width: 100 }); } catch(e) {}
 
     // Receipt title
     doc.font('HebrewBold').fontSize(22).fillColor('#2c3e50');
-    doc.text('קבלה', 50, 170, { align: 'center', width: 495, features: ['rtla'] });
+    doc.text('קבלה', 50, 180, { align: 'center', width: 495, features: ['rtla'] });
 
-    // Receipt number and date - separate Hebrew labels from numbers
-    doc.font('Hebrew').fontSize(12).fillColor('#555');
-    doc.text('מספר קבלה:', 440, 205, { width: 105, align: 'right', features: ['rtla'] });
-    doc.text(`${receipt.number}`, 390, 205, { width: 50, align: 'right' });
+    // Receipt number and date
+    doc.font('Hebrew').fontSize(12).fillColor('#222');
+    const miskW = doc.widthOfString('מספר קבלה:', { features: ['rtla'] });
+    doc.text('מספר קבלה:', 50, 215, { width: 495, align: 'right', features: ['rtla'] });
+    doc.text(`${receipt.number}`, 545 - miskW - doc.widthOfString(`${receipt.number}`) - 6, 215);
 
     const dateParts = receipt.date.split('-');
     const hebrewDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-    doc.text('תאריך:', 440, 225, { width: 105, align: 'right', features: ['rtla'] });
-    doc.text(hebrewDate, 355, 225, { width: 85, align: 'right' });
+    const taarichW = doc.widthOfString('תאריך:', { features: ['rtla'] });
+    doc.text('תאריך:', 50, 235, { width: 495, align: 'right', features: ['rtla'] });
+    doc.text(hebrewDate, 545 - taarichW - doc.widthOfString(hebrewDate) - 6, 235);
 
     // Divider
-    doc.moveTo(50, 255).lineTo(545, 255).stroke('#2c3e50');
+    doc.moveTo(50, 265).lineTo(545, 265).stroke('#2c3e50');
 
     // Client info
     doc.font('HebrewBold').fontSize(13).fillColor('#2c3e50');
-    doc.text('פרטי לקוח:', 50, 275, { align: 'right', width: 495, features: ['rtla'] });
-    doc.font('Hebrew').fontSize(12).fillColor('#333');
-    doc.text('שם:', 440, 297, { width: 105, align: 'right', features: ['rtla'] });
-    doc.text(receipt.clientName, 280, 297, { width: 160, align: 'right', features: ['rtla'] });
+    doc.text('פרטי לקוח:', 50, 285, { align: 'right', width: 495, features: ['rtla'] });
+    doc.font('Hebrew').fontSize(12).fillColor('#111');
+    const shemW = doc.widthOfString('שם:', { features: ['rtla'] });
+    doc.text('שם:', 50, 307, { width: 495, align: 'right', features: ['rtla'] });
+    doc.text(receipt.clientName, 545 - shemW - doc.widthOfString(receipt.clientName, { features: ['rtla'] }) - 6, 307, { features: ['rtla'] });
 
     // Service details
     doc.font('HebrewBold').fontSize(13).fillColor('#2c3e50');
-    doc.text('פרטי השירות:', 50, 335, { align: 'right', width: 495, features: ['rtla'] });
+    doc.text('פרטי השירות:', 50, 345, { align: 'right', width: 495, features: ['rtla'] });
 
     // Table header
-    doc.rect(50, 360, 495, 30).fill('#ecf0f1');
+    doc.rect(50, 370, 495, 30).fill('#ecf0f1');
     doc.font('HebrewBold').fontSize(11).fillColor('#2c3e50');
-    doc.text('סכום', 60, 368, { width: 100, align: 'left', features: ['rtla'] });
-    doc.text('אמצעי תשלום', 180, 368, { width: 120, align: 'center', features: ['rtla'] });
-    doc.text('תיאור', 300, 368, { width: 245, align: 'right', features: ['rtla'] });
+    doc.text('סכום', 60, 378, { width: 80, align: 'left', features: ['rtla'] });
+    doc.text('אמצעי תשלום', 150, 378, { width: 100, align: 'center', features: ['rtla'] });
+    doc.text('תאריך שירות', 260, 378, { width: 100, align: 'center', features: ['rtla'] });
+    doc.text('תיאור', 370, 378, { width: 175, align: 'right', features: ['rtla'] });
 
     // Table row
     const methodNames = {
@@ -151,26 +177,54 @@ router.get('/:id/pdf', (req, res, next) => {
       'cash': 'מזומן'
     };
 
-    doc.rect(50, 390, 495, 30).fill('#ffffff').stroke('#e0e0e0');
-    doc.font('Hebrew').fontSize(11).fillColor('#333');
-    doc.text(`₪${receipt.amount.toLocaleString()}`, 60, 398, { width: 100, align: 'left' });
-    doc.text(methodNames[receipt.method] || receipt.method || '-', 180, 398, { width: 120, align: 'center', features: ['rtla'] });
-    doc.text(receipt.description, 300, 398, { width: 245, align: 'right', features: ['rtla'] });
+    const sd = receipt.serviceDate ? receipt.serviceDate.split('-') : null;
+    const serviceDateStr = sd ? `${sd[2]}/${sd[1]}/${sd[0]}` : '-';
+
+    doc.rect(50, 400, 495, 30).fill('#ffffff').stroke('#e0e0e0');
+    doc.font('Hebrew').fontSize(11).fillColor('#111');
+    doc.text(`₪${receipt.amount.toLocaleString()}`, 60, 408, { width: 80, align: 'left' });
+    doc.text(methodNames[receipt.method] || receipt.method || '-', 150, 408, { width: 100, align: 'center', features: ['rtla'] });
+    doc.text(serviceDateStr, 260, 408, { width: 100, align: 'center' });
+    doc.text(receipt.description, 370, 408, { width: 175, align: 'right', features: ['rtla'] });
 
     // Total
-    doc.rect(50, 430, 495, 35).fill('#2c3e50');
+    doc.rect(50, 440, 495, 35).fill('#2c3e50');
     doc.font('HebrewBold').fontSize(14).fillColor('#ffffff');
-    doc.text('סה"כ:', 300, 440, { width: 100, align: 'right', features: ['rtla'] });
-    doc.text(`₪${receipt.amount.toLocaleString()}`, 150, 440, { width: 140, align: 'center' });
+    doc.text('סה"כ:', 300, 450, { width: 100, align: 'right', features: ['rtla'] });
+    doc.text(`₪${receipt.amount.toLocaleString()}`, 150, 450, { width: 140, align: 'center' });
 
     // Note
-    doc.font('Hebrew').fontSize(10).fillColor('#888');
-    doc.text('עוסק פטור - פטור ממע"מ על פי חוק', 50, 480, { align: 'center', width: 495, features: ['rtla'] });
+    doc.font('Hebrew').fontSize(10).fillColor('#444');
+    doc.text('עוסק פטור - פטור ממע"מ על פי חוק', 50, 495, { align: 'center', width: 495, features: ['rtla'] });
 
     // Footer
-    doc.moveTo(50, 740).lineTo(545, 740).stroke('#e0e0e0');
-    doc.font('Hebrew').fontSize(9).fillColor('#aaa');
-    doc.text(`אסנת הרציגר - פסיכותרפיה זוגית ומשפחתית | עוסק פטור ${BUSINESS.taxId} | ${BUSINESS.phone} | ${BUSINESS.email}`, 50, 755, { align: 'center', width: 495, features: ['rtla'] });
+    doc.moveTo(50, 730).lineTo(545, 730).stroke('#999');
+    doc.font('Hebrew').fontSize(9).fillColor('#555');
+    doc.text('אסנת הרציגר - פסיכותרפיה זוגית ומשפחתית', 50, 740, { align: 'center', width: 495, features: ['rtla'] });
+    doc.font('Hebrew').fontSize(9).fillColor('#555');
+    const fOsekW = doc.widthOfString('עוסק פטור', { features: ['rtla'] });
+    const fTaxW = doc.widthOfString(BUSINESS.taxId);
+    const fNaidW2 = doc.widthOfString('נייד:', { features: ['rtla'] });
+    const fPhoneW = doc.widthOfString(BUSINESS.phone);
+    const fMailW2 = doc.widthOfString('מייל:', { features: ['rtla'] });
+    const fEmailW = doc.widthOfString(BUSINESS.email);
+    const gap = 4;
+    const sep = 14;
+
+    const totalW = fOsekW + gap + fTaxW + sep + fNaidW2 + gap + fPhoneW + sep + fMailW2 + gap + fEmailW;
+    let fx = (545 + 50 - totalW) / 2 + totalW;
+
+    doc.text('עוסק פטור', fx - fOsekW, 753, { features: ['rtla'] });
+    fx -= fOsekW + gap;
+    doc.text(BUSINESS.taxId, fx - fTaxW, 753);
+    fx -= fTaxW + sep;
+    doc.text('נייד:', fx - fNaidW2, 753, { features: ['rtla'] });
+    fx -= fNaidW2 + gap;
+    doc.text(BUSINESS.phone, fx - fPhoneW, 753);
+    fx -= fPhoneW + sep;
+    doc.text('מייל:', fx - fMailW2, 753, { features: ['rtla'] });
+    fx -= fMailW2 + gap;
+    doc.text(BUSINESS.email, fx - fEmailW, 753);
 
     doc.end();
   } catch (err) {

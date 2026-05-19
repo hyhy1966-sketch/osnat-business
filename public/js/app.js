@@ -40,6 +40,8 @@ const currentYear = new Date().getFullYear();
 const today = new Date().toISOString().split('T')[0];
 document.getElementById('addDate').value = today;
 document.getElementById('rcptDate').value = today;
+document.getElementById('addServiceDate').value = today;
+document.getElementById('rcptServiceDate').value = today;
 
 // Set current month in dashboard
 document.getElementById('dashMonth').value = String(new Date().getMonth() + 1).padStart(2, '0');
@@ -86,7 +88,8 @@ document.getElementById('addForm').addEventListener('submit', async (e) => {
     method: document.getElementById('addMethod').value,
     date: document.getElementById('addDate').value,
     clientName: document.getElementById('addClient').value,
-    description: document.getElementById('addDesc').value
+    description: document.getElementById('addDesc').value,
+    serviceDate: document.getElementById('addServiceDate').value
   };
 
   const res = await fetch('/api/transactions', { method: 'POST', headers, body: JSON.stringify(body) });
@@ -150,7 +153,8 @@ document.getElementById('receiptForm').addEventListener('submit', async (e) => {
     amount: document.getElementById('rcptAmount').value,
     method: document.getElementById('rcptMethod').value,
     date: document.getElementById('rcptDate').value,
-    description: document.getElementById('rcptDesc').value
+    description: document.getElementById('rcptDesc').value,
+    serviceDate: document.getElementById('rcptServiceDate').value
   };
 
   const res = await fetch('/api/receipts', { method: 'POST', headers, body: JSON.stringify(body) });
