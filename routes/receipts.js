@@ -233,4 +233,42 @@ router.get('/:id/pdf', (req, res, next) => {
   }
 });
 
+// Delete receipt
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const result = await receipts.remove({ _id: req.params.id, userId: req.user.id });
+    if (result === 0) {
+      return res.status(404).json({ message: 'קבלה לא נמצאה' });
+    }
+    res.json({ message: 'הקבלה נמחקה בהצלחה' });
+  } catch (err) {
+    res.status(500).json({ message: 'שגיאת שרת' });
+  }
+});
+
+// Update receipt
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const { clientName, description, amount, date, method, serviceDate } = req.body;
+    const existing = await receipts.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!existing) {
+      return res.status(404).json({ message: 'קבלה לא נמצאה' });
+    }
+
+    const updates = {};
+    if (clientName) updates.clientName = clientName;
+    if (description) updates.description = description;
+    if (amount) updates.amount = Number(amount);
+    if (date) updates.date = date;
+    if (method) updates.method = method;
+    if (serviceDate) updates.serviceDate = serviceDate;
+
+    await receipts.update({ _id: req.params.id, userId: req.user.id }, { $set: updates });
+    const updated = await receipts.findOne({ _id: req.params.id });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: 'שגיאת שרת' });
+  }
+});
+
 module.exports = router;

@@ -185,7 +185,11 @@ async function loadReceipts() {
       <td>${d[2]}/${d[1]}/${d[0]}</td>
       <td>${r.clientName}</td>
       <td>₪${r.amount.toLocaleString()}</td>
-      <td><a href="/api/receipts/${r._id}/pdf?token=${token}" target="_blank" class="btn btn-info">📄 PDF</a></td>
+      <td>
+        <a href="/api/receipts/${r._id}/pdf?token=${token}" target="_blank" class="btn btn-info">📄 PDF</a>
+        <button class="btn btn-primary" onclick="openEditReceipt('${r._id}','${r.clientName}',${r.amount},'${r.method || ''}','${r.date}','${r.description || ''}','${r.serviceDate || ''}')">✏️ ערוך</button>
+        <button class="btn btn-danger" onclick="deleteReceipt('${r._id}')">🗑️ מחק</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -232,6 +236,54 @@ async function deleteClient(id) {
   await fetch(`/api/clients/${id}`, { method: 'DELETE', headers });
   loadClients();
 }
+
+// ---- RECEIPT DELETE & EDIT ----
+async function deleteReceipt(id) {
+  if (!confirm('למחוק את הקבלה?')) return;
+  await fetch(`/api/receipts/${id}`, { method: 'DELETE', headers });
+  loadReceipts();
+}
+
+function openEditReceipt(id, clientName, amount, method, date, description, serviceDate) {
+  document.getElementById('editRcptId').value = id;
+  document.getElementById('editRcptClient').value = clientName;
+  document.getElementById('editRcptAmount').value = amount;
+  document.getElementById('editRcptMethod').value = method;
+  document.getElementById('editRcptDate').value = date;
+  document.getElementById('editRcptDesc').value = description;
+  document.getElementById('editRcptServiceDate').value = serviceDate;
+  document.getElementById('editReceiptModal').style.display = 'flex';
+}
+
+function closeEditReceiptModal() {
+  document.getElementById('editReceiptModal').style.display = 'none';
+}
+
+document.getElementById('editReceiptForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('editRcptId').value;
+  const body = {
+    clientName: document.getElementById('editRcptClient').value,
+    amount: document.getElementById('editRcptAmount').value,
+    method: document.getElementById('editRcptMethod').value,
+    date: document.getElementById('editRcptDate').value,
+    description: document.getElementById('editRcptDesc').value,
+    serviceDate: document.getElementById('editRcptServiceDate').value
+  };
+
+  const res = await fetch(`/api/receipts/${id}`, { method: 'PUT', headers, body: JSON.stringify(body) });
+  if (res.ok) {
+    closeEditReceiptModal();
+    loadReceipts();
+  } else {
+    alert('שגיאה בעדכון הקבלה');
+  }
+});
+
+// Close modal on overlay click
+document.getElementById('editReceiptModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeEditReceiptModal();
+});
 
 // Initial load
 loadDashboard();
